@@ -1,6 +1,5 @@
 from django import forms
 from .models import Post, Comment, User
-from django.contrib.auth.forms import PasswordChangeForm
 
 
 class PostForm(forms.ModelForm):

@@ -26,7 +26,9 @@ class UserProfileView(TemplateView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         try:
-            user = get_object_or_404(User, username=self.kwargs.get('username'))
+            user = get_object_or_404(
+                User, username=self.kwargs.get('username')
+            )
         except User.DoesNotExist:
             raise Http404("Пользователь не найден")
         context['user_profile'] = user
@@ -67,7 +69,9 @@ class PostCreateView(CreateView):
         return self.request.user.groups.filter(name='Автор').exists()
 
     def get_success_url(self):
-        return reverse('blog:profile', kwargs={'username': self.request.user.username})
+        return reverse(
+            'blog:profile', kwargs={'username': self.request.user.username}
+        )
 
     def form_valid(self, form):
         form.instance.author = self.request.user
@@ -183,6 +187,7 @@ class CommentDeleteView(LoginRequiredMixin, DeleteView):
 
     def get_success_url(self):
         return reverse('blog:post_detail', kwargs={'post_id': self.post.pk})
+
     def test_func(self):
         comment = self.get_object()
         return comment.author == self.request.user
