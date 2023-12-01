@@ -18,7 +18,6 @@ urlpatterns = [
         ),
         name='registration',
     ),
-    
 ]
 
 if settings.DEBUG:
