@@ -7,7 +7,6 @@ from django.urls import reverse_lazy
 from django.http import HttpResponseForbidden
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.decorators import login_required
-from django.core.paginator import Paginator
 
 from .forms import PostForm
 from .models import Post, Category, User, Comment
