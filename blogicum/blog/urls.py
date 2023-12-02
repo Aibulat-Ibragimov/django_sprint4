@@ -1,8 +1,6 @@
-from django.urls import include, path, reverse_lazy
+from django.urls import path
 from django.conf.urls.static import static
 from django.conf import settings
-from django.contrib.auth.forms import UserCreationForm
-from django.views.generic.edit import CreateView
 
 from . import views
 
@@ -17,11 +15,7 @@ urlpatterns = [
     ),
     path('category/<slug:category_slug>/', views.CategoryView.as_view(),
          name='category_posts'),
-    path(
-        'profile/<str:username>/',
-        views.UserProfileView.as_view(),
-        name='profile'
-    ),
+    path('profile/<str:username>/', views.profile, name='profile'),
     path(
         'profile/<str:username>/edit/',
         views.UserEditProfileView.as_view(),
@@ -40,28 +34,18 @@ urlpatterns = [
         name='edit_post'
     ),
     path(
-        'auth/registration/',
-        CreateView.as_view(
-            template_name='registration/registration_form.html',
-            form_class=UserCreationForm,
-            success_url=reverse_lazy('blog:index'),
-        ),
-        name='registration',
-    ),
-    path('auth/', include('django.contrib.auth.urls')),
-    path(
         'posts/<int:post_id>/comment/',
-        views.CommentCreateView.as_view(),
+        views.add_comment,
         name='add_comment'
     ),
     path(
         'posts/<int:post_id>/edit_comment/<int:comment_id>/',
-        views.CommentUpdateView.as_view(),
+        views.edit_comment,
         name='edit_comment'
     ),
     path(
         'posts/<int:post_id>/delete_comment/<int:comment_id>/',
-        views.CommentDeleteView.as_view(),
+        views.delete_comment,
         name='delete_comment'
     )
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
