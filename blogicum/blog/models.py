@@ -104,6 +104,9 @@ class Post(PublishedModel, CreatedModel):
     def get_absolute_url(self):
         return reverse('blog:post_detail', kwargs={'pk': self.pk})
 
+    def get_comment_count(self):
+        return self.comment.count()
+
 
 class Comment(models.Model):
     text = models.TextField('Текст комментария')

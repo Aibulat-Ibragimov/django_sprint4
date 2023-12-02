@@ -20,32 +20,51 @@ class PostListView(ListView):
     paginate_by = NUMBER_OF_POSTS
     template_name = 'blog/index.html'
 
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        posts = context['page_obj']
+        for post in posts:
+            post.comment_count = post.get_comment_count()
+        return context
 
-def profile(request, username):
-    profile = get_object_or_404(User, username=username)
-    if request.user == profile:
-        posts = Post.objects.filter(author=profile)
-    else:
-        posts = Post.objects.filter(
-            author=profile,
-            is_published=True,
-            pub_date__lte=datetime.datetime.now()
-        )
-        paginator = Paginator(posts, NUMBER_OF_POSTS)
-        page_number = request.GET.get('page')
-        page_obj = paginator.get_page(page_number)
-        context = {'page_obj': page_obj, 'profile': profile}
-        return render(request, 'blog/profile.html', context)
+
+class ProfileView(ListView):
+    model = Post
+    template_name = 'blog/profile.html'
+    context_object_name = 'page_obj'
+    paginate_by = NUMBER_OF_POSTS
+
+    def get_queryset(self):
+        username = self.kwargs['username']
+        profile = get_object_or_404(User, username=username)
+
+        if self.request.user == profile:
+            return Post.objects.filter(author=profile)
+        else:
+            return Post.objects.filter(
+                author=profile,
+                is_published=True,
+                pub_date__lte=datetime.datetime.now()
+            )
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        profile = get_object_or_404(User, username=self.kwargs['username'])
+        context['profile'] = profile
+        for post in context['page_obj']:
+            post.comment_count = post.get_comment_count()
+        return context
 
 
 class UserEditProfileView(LoginRequiredMixin, UpdateView):
     model = User
     template_name = 'blog/user.html'
-    fields = ['first_name', 'last_name', 'username']
-    success_url = reverse_lazy('user')
+    fields = ['first_name', 'last_name', 'username', 'email']
+    context_object_name = 'username'
 
     def get_object(self, queryset=None):
-        return self.request.user
+        username = self.kwargs.get('username')
+        return get_object_or_404(User, username=username)
 
     def get_success_url(self):
         return reverse_lazy(
@@ -60,6 +79,8 @@ class CategoryView(ListView):
     def get(self, request, category_slug):
         category = Category.objects.get(slug=category_slug, is_published=True)
         page_obj = category.posts.filter_posts()
+        for post in page_obj:
+            post.comment_count = post.get_comment_count()
         return render(
             request, 'blog/category.html', {
                 'page_obj': page_obj, 'category': category
@@ -124,7 +145,7 @@ class PostDetailView(DetailView):
         post = Post.objects.get(pk=post_id)
         comments = Comment.objects.filter(post=post)
         form = CommentForm()
-        comment_count = Post.objects.count
+        comment_count = post.get_comment_count()
         return render(
             request, 'blog/post_detail.html', {
                 'post': post, 'comments': comments,
