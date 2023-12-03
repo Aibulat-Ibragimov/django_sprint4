@@ -102,7 +102,7 @@ def category_posts(request, category_slug):
 class PostCreateView(LoginRequiredMixin, CreateView):
     model = Post
     template_name = 'blog/create.html'
-    fields = ['title', 'text', 'pub_date', 'image', 'location', 'category',]
+    fields = ['title', 'text', 'pub_date', 'image', 'location', 'category', ]
 
     def get_success_url(self):
         return reverse_lazy(
