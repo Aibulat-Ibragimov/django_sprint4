@@ -172,7 +172,6 @@ class PostDeleteView(LoginRequiredMixin, DeleteView):
         return super().form_valid(form)
 
     def delete(self, request, *args, **kwargs):
-        post = self.get_object()
         if (
             self.request.user.is_authenticated
             and self.request.user == self.get_object().author
