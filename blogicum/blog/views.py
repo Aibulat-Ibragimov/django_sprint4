@@ -101,7 +101,7 @@ class CategoryView(View):
             'paginator': paginator,
             'category': category
         }
-        return render(request, self.template_name, context)
+        return render(request, 'blog/category.html', context)
 
 
 class PostCreateView(CreateView):
@@ -159,7 +159,7 @@ class PostDetailView(DetailView):
 
     def get(self, request, post_id):
         post = Post.objects.get(pk=post_id)
-        comments = Comment.objects.filter(post=post).order_by('-created_at')
+        comments = Comment.objects.filter(post=post).order_by('created_at')
         form = CommentForm()
         comment_count = post.get_comment_count()
         return render(

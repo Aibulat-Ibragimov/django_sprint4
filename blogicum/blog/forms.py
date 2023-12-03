@@ -31,6 +31,12 @@ class UserInfoForm(forms.ModelForm):
             'placeholder': 'Введите имя пользователя'
         })
     )
+    email = forms.EmailField(
+        widget=forms.EmailInput(attrs={
+            'class': 'form-control',
+            'placeholder': 'Введите email'
+        })
+    )
     first_name = forms.CharField(
         max_length=150,
         label='Имя',
