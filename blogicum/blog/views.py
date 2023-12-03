@@ -1,11 +1,10 @@
 import datetime
-from typing import Any
 
 from django.shortcuts import get_object_or_404, render, redirect
 from django.views.generic import ListView, CreateView, UpdateView, DeleteView
 from django.views.generic import DetailView
 from django.urls import reverse_lazy
-from django.http import HttpRequest, HttpResponse, HttpResponseForbidden, HttpResponseRedirect
+from django.http import HttpResponseForbidden, HttpResponseRedirect
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.decorators import login_required
 from django.core.paginator import Paginator
@@ -102,6 +101,7 @@ def category_posts(request, category_slug):
 
 class PostCreateView(LoginRequiredMixin, CreateView):
     model = Post
+    form_class = PostForm
     template_name = 'blog/create.html'
     fields = ['title', 'text', 'pub_date', 'image', 'location', 'category', ]
 
@@ -117,6 +117,7 @@ class PostCreateView(LoginRequiredMixin, CreateView):
 
 class PostUpdateView(LoginRequiredMixin, UpdateView):
     model = Post
+    form_class = PostForm
     template_name = 'blog/create.html'
     fields = ['title', 'text', 'pub_date', 'image', 'location', 'category', ]
 
