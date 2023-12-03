@@ -173,8 +173,10 @@ class PostDeleteView(LoginRequiredMixin, DeleteView):
 
     def delete(self, request, *args, **kwargs):
         post = self.get_object()
-        if (self.request.user.is_authenticated
-            and self.request.user == post.author):
+        if (
+            self.request.user.is_authenticated
+            and self.request.user == self.get_object().author
+        ):
             return super().delete(request, *args, **kwargs)
         else:
             return HttpResponseForbidden(
