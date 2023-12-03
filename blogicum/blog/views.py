@@ -134,7 +134,7 @@ class PostUpdateView(LoginRequiredMixin, UpdateView):
             return super().get(request, *args, **kwargs)
         else:
             return HttpResponseRedirect(
-                reverse_lazy('blog/post_detail.html',
+                reverse_lazy('blog:post_detail',
                              kwargs={'post_id': self.kwargs['id']})
             )
 
@@ -147,7 +147,7 @@ class PostUpdateView(LoginRequiredMixin, UpdateView):
             return super().form_valid(form)
         else:
             return HttpResponseRedirect(
-                reverse_lazy('blog/post_detail.html',
+                reverse_lazy('blog:post_detail',
                              kwargs={'post_id': form.instance.id})
             )
 
