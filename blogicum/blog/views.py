@@ -1,12 +1,16 @@
 import datetime
+from typing import Any
 
+from django.db.models.query import QuerySet
 from django.shortcuts import get_object_or_404, render, redirect
 from django.views.generic import ListView, CreateView, UpdateView, DeleteView
 from django.views.generic import DetailView
+from django.views import View
 from django.urls import reverse_lazy
 from django.http import HttpResponseForbidden
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.decorators import login_required
+from django.core.paginator import Paginator
 
 from .forms import PostForm
 from .models import Post, Category, User, Comment
@@ -18,6 +22,14 @@ class PostListView(ListView):
     model = Post
     paginate_by = NUMBER_OF_POSTS
     template_name = 'blog/index.html'
+
+    def get_queryset(self):
+        queryset = super().get_queryset()
+        return queryset.filter(
+            is_published=True,
+            category__is_published=True,
+            pub_date__lte=datetime.datetime.now()
+        )
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -72,20 +84,26 @@ class UserEditProfileView(LoginRequiredMixin, UpdateView):
         )
 
 
-class CategoryView(ListView):
-    paginate_by = NUMBER_OF_POSTS
+class CategoryView(View):
+    paginate_by = 10
+    template_name = 'blog/category.html'
 
     def get(self, request, category_slug):
         category = Category.objects.get(slug=category_slug, is_published=True)
-        page_obj = category.posts.filter_posts()
+        queryset = category.posts.filter_posts()
+        paginator = Paginator(queryset, self.paginate_by)
+        page_number = request.GET.get('page')
+        page_obj = paginator.get_page(page_number)
+
         for post in page_obj:
             post.comment_count = post.get_comment_count()
-        return render(
-            request, 'blog/category.html', {
-                'page_obj': page_obj, 'category': category
-            }
-        )
 
+        context = {
+            'page_obj': page_obj,
+            'paginator': paginator,
+            'category': category
+        }
+        return render(request, self.template_name, context)
 
 class PostCreateView(CreateView):
     model = Post
@@ -142,7 +160,7 @@ class PostDetailView(DetailView):
 
     def get(self, request, post_id):
         post = Post.objects.get(pk=post_id)
-        comments = Comment.objects.filter(post=post)
+        comments = Comment.objects.filter(post=post).order_by('-created_at')
         form = CommentForm()
         comment_count = post.get_comment_count()
         return render(
