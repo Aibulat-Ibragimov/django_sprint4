@@ -1,7 +1,5 @@
 import datetime
-from typing import Any
 
-from django.db.models.query import QuerySet
 from django.shortcuts import get_object_or_404, render, redirect
 from django.views.generic import ListView, CreateView, UpdateView, DeleteView
 from django.views.generic import DetailView
@@ -104,6 +102,7 @@ class CategoryView(View):
             'category': category
         }
         return render(request, self.template_name, context)
+
 
 class PostCreateView(CreateView):
     model = Post
