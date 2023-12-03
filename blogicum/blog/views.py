@@ -82,26 +82,22 @@ class UserEditProfileView(LoginRequiredMixin, UpdateView):
         )
 
 
-class CategoryView(View):
-    paginate_by = 10
-    template_name = 'blog/category.html'
-
-    def get(self, request, category_slug):
-        category = Category.objects.get(slug=category_slug, is_published=True)
-        queryset = category.posts.filter_posts()
-        paginator = Paginator(queryset, self.paginate_by)
-        page_number = request.GET.get('page')
-        page_obj = paginator.get_page(page_number)
-
-        for post in page_obj:
-            post.comment_count = post.get_comment_count()
-
-        context = {
-            'page_obj': page_obj,
-            'paginator': paginator,
-            'category': category
-        }
-        return render(request, 'blog/category.html', context)
+def category_posts(request, category_slug):
+    category = get_object_or_404(
+        Category,
+        slug=category_slug,
+        is_published=True,
+    )
+    post_list = category.posts.filter_posts()
+    paginator = Paginator(post_list, NUMBER_OF_POSTS)
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+    context = {
+        'page_obj': page_obj,
+        'paginator': paginator,
+        'category': category
+    }
+    return render(request, 'blog/category.html', context)
 
 
 class PostCreateView(CreateView):
