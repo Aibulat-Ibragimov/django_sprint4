@@ -1,10 +1,11 @@
 import datetime
+from typing import Any
 
 from django.shortcuts import get_object_or_404, render, redirect
 from django.views.generic import ListView, CreateView, UpdateView, DeleteView
 from django.views.generic import DetailView
 from django.urls import reverse_lazy
-from django.http import HttpResponseForbidden
+from django.http import HttpRequest, HttpResponse, HttpResponseForbidden, HttpResponseRedirect
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.decorators import login_required
 from django.core.paginator import Paginator
@@ -114,9 +115,47 @@ class PostCreateView(LoginRequiredMixin, CreateView):
         return super().form_valid(form)
 
 
-class PostUpdateView(UpdateView):
+class PostUpdateView(LoginRequiredMixin, UpdateView):
     model = Post
-    form_class = PostForm
+    template_name = 'blog/create.html'
+    fields = ['title', 'text', 'pub_date', 'image', 'location', 'category', ]
+
+    def get_object(self, queryset=None):
+        return Post.objects.get(pk=self.kwargs.get("post_id"))
+
+    def get_success_url(self):
+        return reverse_lazy(
+            'blog:profile', kwargs={'username': self.request.user.username}
+        )
+
+    def get(self, request, *args, **kwargs):
+        if (
+            self.request.user.is_authenticated
+            and self.request.user == self.get_object().author
+        ):
+            return super().get(request, *args, **kwargs)
+        else:
+            return HttpResponseRedirect(
+                reverse_lazy('blog/post_detail.html',
+                             kwargs={'post_id': self.kwargs['id']})
+            )
+
+    def form_valid(self, form):
+        if (
+            self.request.user.is_authenticated
+            and self.request.user == self.get_object().author
+        ):
+            form.instance.author == self.request.user
+            return super().form_valid(form)
+        else:
+            return HttpResponseRedirect(
+                reverse_lazy('blog/post_detail.html',
+                             kwargs={'post_id': form.instance.id})
+            )
+
+
+class PostDeleteView(LoginRequiredMixin, DeleteView):
+    model = Post
     template_name = 'blog/create.html'
 
     def get_object(self, queryset=None):
@@ -128,23 +167,18 @@ class PostUpdateView(UpdateView):
         )
 
     def form_valid(self, form):
-        form.instance.author = self.request.user
+        form.instance.author == self.request.user
         return super().form_valid(form)
 
-    def test_func(self):
+    def delete(self, request, *args, **kwargs):
         post = self.get_object()
-        if self.request.user == post.author:
-            return True
+        if (self.request.user.is_authenticated
+            and self.request.user == post.author):
+            return super().delete(request, *args, **kwargs)
         else:
-            return False
-
-
-class PostDeleteView(DeleteView):
-    model = Post
-    pk_url_kwarg = 'post_id'
-    context_object_name = 'post'
-    template_name = 'blog/create.html'
-    success_url = reverse_lazy('blog:index')
+            return HttpResponseForbidden(
+                'У вас нет разрешения удалять этот пост'
+            )
 
 
 class PostDetailView(DetailView):
