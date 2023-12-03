@@ -101,7 +101,6 @@ def category_posts(request, category_slug):
 
 class PostCreateView(LoginRequiredMixin, CreateView):
     model = Post
-    form_class = PostForm
     template_name = 'blog/create.html'
     fields = ['title', 'text', 'pub_date', 'image', 'location', 'category', ]
 
@@ -117,7 +116,6 @@ class PostCreateView(LoginRequiredMixin, CreateView):
 
 class PostUpdateView(LoginRequiredMixin, UpdateView):
     model = Post
-    form_class = PostForm
     template_name = 'blog/create.html'
     fields = ['title', 'text', 'pub_date', 'image', 'location', 'category', ]
 
