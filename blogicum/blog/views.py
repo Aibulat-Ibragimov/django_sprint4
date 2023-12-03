@@ -99,10 +99,10 @@ def category_posts(request, category_slug):
     return render(request, 'blog/category.html', context)
 
 
-class PostCreateView(CreateView):
+class PostCreateView(LoginRequiredMixin, CreateView):
     model = Post
-    form_class = PostForm
     template_name = 'blog/create.html'
+    fields = ['title', 'text', 'pub_date', 'image', 'location', 'category',]
 
     def get_success_url(self):
         return reverse_lazy(
