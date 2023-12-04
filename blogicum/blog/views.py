@@ -189,7 +189,7 @@ class PostDetailView(DetailView):
     def get(self, request, post_id):
         post = get_object_or_404(Post, pk=self.kwargs.get('post_id'))
         if (
-            post.is_published and request.category.is_published
+            post.is_published and post.category.is_published
             and post.pub_date <= timezone.now()
             or (request.user.is_authenticated and request.user == post.author)
         ):
