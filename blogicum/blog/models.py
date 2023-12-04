@@ -1,7 +1,6 @@
 from django.db import models
 from django.contrib.auth import get_user_model
 from django.utils import timezone
-from django import forms
 from django.urls import reverse
 
 from core.models import PublishedModel, CreatedModel
