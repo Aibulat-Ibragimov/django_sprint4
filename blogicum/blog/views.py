@@ -8,6 +8,7 @@ from django.http import HttpResponseForbidden, HttpResponseRedirect
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.decorators import login_required
 from django.core.paginator import Paginator
+from django.utils import timezone
 
 from .models import Post, Category, User, Comment
 from .forms import CommentForm
@@ -188,7 +189,8 @@ class PostDetailView(DetailView):
     def get(self, request, post_id):
         post = get_object_or_404(Post, pk=self.kwargs.get('post_id'))
         if (
-            post.is_published and post.category.is_published
+            post.is_published and request.category.is_published
+            and post.pub_date <= timezone.now()
             or (request.user.is_authenticated and request.user == post.author)
         ):
             comments = Comment.objects.filter(post=post).order_by('created_at')
