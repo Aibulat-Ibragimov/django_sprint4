@@ -187,15 +187,22 @@ class PostDetailView(DetailView):
 
     def get(self, request, post_id):
         post = get_object_or_404(Post, pk=self.kwargs.get('post_id'))
-        comments = Comment.objects.filter(post=post).order_by('created_at')
-        form = CommentForm()
-        comment_count = post.get_comment_count()
-        return render(
-            request, 'blog/post_detail.html', {
-                'post': post, 'comments': comments,
-                'form': form, 'comment_count': comment_count
-            }
-        )
+        if (
+            post.is_published or (
+                request.user.is_authenticated and request.user == post.author
+            )
+        ):
+            comments = Comment.objects.filter(post=post).order_by('created_at')
+            form = CommentForm()
+            comment_count = post.get_comment_count()
+            return render(
+                request, 'blog/post_detail.html', {
+                    'post': post, 'comments': comments,
+                    'form': form, 'comment_count': comment_count
+                }
+            )
+        else:
+            return HttpResponseForbidden('Вы не имеете доступа к этому посту.')
 
     def post(self, request, post_id):
         form = CommentForm(request.POST)
