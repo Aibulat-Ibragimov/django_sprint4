@@ -4,7 +4,7 @@ from django.shortcuts import get_object_or_404, render, redirect
 from django.views.generic import ListView, CreateView, UpdateView, DeleteView
 from django.views.generic import View
 from django.urls import reverse_lazy
-from django.http import HttpResponseForbidden, HttpResponseRedirect
+from django.http import HttpResponseForbidden, HttpResponseRedirect, Http404
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.decorators import login_required
 from django.core.paginator import Paginator
@@ -212,7 +212,7 @@ class PostDetailView(View):
                 }
             )
         else:
-            return HttpResponseForbidden('Вы не имеете доступа к этому посту.')
+            raise Http404
 
     def post(self, request, post_id):
         form = CommentForm(request.POST)
