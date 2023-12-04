@@ -157,7 +157,7 @@ class PostDeleteView(LoginRequiredMixin, DeleteView):
     template_name = 'blog/create.html'
 
     def get_object(self, queryset=None):
-        return Post.objects.get(pk=self.kwargs.get("post_id"))
+        return get_object_or_404(Post, pk=self.kwargs.get('post_id'))
 
     def get_success_url(self):
         return reverse_lazy(
