@@ -188,7 +188,7 @@ class PostDetailView(DetailView):
     def get(self, request, post_id):
         post = get_object_or_404(Post, pk=self.kwargs.get('post_id'))
         if (
-            post.is_published
+            post.is_published and post.category.is_published
             or (request.user.is_authenticated and request.user == post.author)
         ):
             comments = Comment.objects.filter(post=post).order_by('created_at')
