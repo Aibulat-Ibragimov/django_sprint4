@@ -188,10 +188,8 @@ class PostDetailView(DetailView):
     def get(self, request, post_id):
         post = get_object_or_404(Post, pk=self.kwargs.get('post_id'))
         if (
-            post.is_published or (
-                self.request.user.is_authenticated
-                and self.request.user == post.author
-            )
+            post.is_published
+            or (request.user.is_authenticated and request.user == post.author)
         ):
             comments = Comment.objects.filter(post=post).order_by('created_at')
             form = CommentForm()
@@ -210,11 +208,11 @@ class PostDetailView(DetailView):
         if form.is_valid():
             comment = form.save(commit=False)
             comment.author = request.user
-            comment.post = Post.objects.get(pk=post_id)
+            comment.post = get_object_or_404(Post, pk=post_id)
             comment.save()
             return redirect('post_detail.html', post_id=post_id)
         else:
-            post = Post.objects.get(pk=post_id)
+            post = get_object_or_404(Post, pk=post_id)
             comments = Comment.objects.filter(post=post)
             return render(request, 'post_detail.html', {
                 'post': post, 'comments': comments, 'form': form
