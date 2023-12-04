@@ -197,10 +197,7 @@ class PostDetailView(View):
         if (
             post.is_published and post.category.is_published
             and post.pub_date <= timezone.now()
-            or (
-                self.request.user.is_authenticated
-                and self.request.user == post.author
-            )
+            or self.request.user == post.author
         ):
             comments = Comment.objects.filter(post=post).order_by('created_at')
             form = CommentForm()
