@@ -187,11 +187,11 @@ class PostDetailView(DetailView):
     context_object_name = 'post'
 
     def get(self, request, post_id):
-        post = get_object_or_404(Post, pk=self.kwargs.get('post_id'))
+        post = get_object_or_404(Post, pk=post_id)
         if (
             post.is_published and post.category.is_published
             and post.pub_date <= timezone.now()
-            or request.user == post.author
+            or (request.user.is_authenticated and request.user == post.author)
         ):
             comments = Comment.objects.filter(post=post).order_by('created_at')
             form = CommentForm()
