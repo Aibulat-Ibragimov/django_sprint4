@@ -2,7 +2,7 @@ import datetime
 
 from django.shortcuts import get_object_or_404, render, redirect
 from django.views.generic import ListView, CreateView, UpdateView, DeleteView
-from django.views.generic import DetailView
+from django.views.generic import View
 from django.urls import reverse_lazy
 from django.http import HttpResponseForbidden, HttpResponseRedirect
 from django.contrib.auth.mixins import LoginRequiredMixin
@@ -102,7 +102,10 @@ def category_posts(request, category_slug):
 class PostCreateView(LoginRequiredMixin, CreateView):
     model = Post
     template_name = 'blog/create.html'
-    fields = ['title', 'text', 'pub_date', 'image', 'location', 'category', ]
+    fields = [
+        'title', 'text', 'pub_date', 'image',
+        'location', 'category', 'is_published',
+    ]
 
     def get_success_url(self):
         return reverse_lazy(
@@ -117,7 +120,10 @@ class PostCreateView(LoginRequiredMixin, CreateView):
 class PostUpdateView(LoginRequiredMixin, UpdateView):
     model = Post
     template_name = 'blog/create.html'
-    fields = ['title', 'text', 'pub_date', 'image', 'location', 'category', ]
+    fields = [
+        'title', 'text', 'pub_date', 'image',
+        'location', 'category', 'is_published',
+    ]
 
     def get_object(self, queryset=None):
         return get_object_or_404(Post, pk=self.kwargs.get('post_id'))
@@ -181,7 +187,7 @@ class PostDeleteView(LoginRequiredMixin, DeleteView):
             )
 
 
-class PostDetailView(DetailView):
+class PostDetailView(View):
     model = Post
     pk_url_kwarg = 'post_id'
     context_object_name = 'post'
@@ -191,7 +197,10 @@ class PostDetailView(DetailView):
         if (
             post.is_published and post.category.is_published
             and post.pub_date <= timezone.now()
-            or (request.user.is_authenticated and request.user == post.author)
+            or (
+                self.request.user.is_authenticated
+                and self.request.user == post.author
+            )
         ):
             comments = Comment.objects.filter(post=post).order_by('created_at')
             form = CommentForm()

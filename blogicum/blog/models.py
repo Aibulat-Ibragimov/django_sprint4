@@ -10,12 +10,6 @@ from .constants import STR_LENGHT, FILDS_MAX_LENGHT
 User = get_user_model()
 
 
-class UserRegistrationForm(forms.ModelForm):
-    class Meta:
-        model = User
-        fields = ['username', 'email', 'first_name', 'last_name']
-
-
 class PostQuerySet(models.Manager):
     def filter_posts(self):
         return self.select_related(
