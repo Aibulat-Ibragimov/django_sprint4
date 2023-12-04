@@ -119,7 +119,7 @@ class PostUpdateView(LoginRequiredMixin, UpdateView):
     fields = ['title', 'text', 'pub_date', 'image', 'location', 'category', ]
 
     def get_object(self, queryset=None):
-        return Post.objects.get(pk=self.kwargs.get("post_id"))
+        return get_object_or_404(Post, pk=self.kwargs.get('post_id'))
 
     def get_success_url(self):
         return reverse_lazy(
@@ -186,7 +186,7 @@ class PostDetailView(DetailView):
     context_object_name = 'post'
 
     def get(self, request, post_id):
-        post = Post.objects.get(pk=post_id)
+        post = get_object_or_404(Post, pk=self.kwargs.get('post_id'))
         comments = Comment.objects.filter(post=post).order_by('created_at')
         form = CommentForm()
         comment_count = post.get_comment_count()
