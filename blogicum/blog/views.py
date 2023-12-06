@@ -87,7 +87,7 @@ class UserEditProfileView(LoginRequiredMixin, UpdateView):
     template_name = 'blog/user.html'
     fields = ('first_name', 'last_name', 'username', 'email')
 
-    def get_object(self, queryset=None): 
+    def get_object(self, queryset=None):
         return self.request.user
 
     def get_success_url(self):
