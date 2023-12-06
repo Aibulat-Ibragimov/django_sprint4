@@ -75,11 +75,11 @@ class ProfileView(ListView):
                 author=profile,
                 is_published=True,
                 pub_date__lte=timezone.now()
-            )
+            ).order_by('-pub_date')
             posts = posts.annotate(comment_count=Count('comments'))
             return posts
         else:
-            posts = Post.objects.filter(author=profile)
+            posts = Post.objects.filter(author=profile).order_by('-pub_date')
             posts = posts.annotate(comment_count=Count('comments'))
             return posts
 
