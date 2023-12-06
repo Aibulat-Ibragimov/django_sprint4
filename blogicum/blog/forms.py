@@ -1,22 +1,28 @@
+import datetime
+
 from django import forms
-from .models import Post, Comment, User
 
-
-class UserRegistrationForm(forms.ModelForm):
-    class Meta:
-        model = User
-        fields = ['username', 'email', 'first_name', 'last_name']
+from .models import Post, Comment
 
 
 class PostForm(forms.ModelForm):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['pub_date'].initial = datetime.datetime.now(
+        ).strftime('%Y-%m-%d %H:%M')
+
     class Meta:
         model = Post
-        fields = '__all__'
+        fields = (
+            'title', 'text', 'pub_date', 'image',
+            'location', 'category', 'is_published',
+        )
         widgets = {
             'text': forms.Textarea({'cols': '22', 'rows': '5'}),
-            'pub_date': forms.DateInput(
-                format='%d%m%Y',
-                attrs={'type': 'date', 'input_formats': ['%Y-%m-%d']}
+            'pub_date': forms.DateTimeInput(
+                format='%Y-%m-%d %H:%M',
+                attrs={'type': 'datetime-local',
+                       'class': 'form-control'}
             ),
         }
 
@@ -26,42 +32,3 @@ class CommentForm(forms.ModelForm):
     class Meta:
         model = Comment
         fields = ('text',)
-
-
-class UserInfoForm(forms.ModelForm):
-    username = forms.CharField(
-        max_length=150,
-        label='Имя пользователя (username)',
-        widget=forms.TextInput(attrs={
-            'class': 'form-control',
-            'placeholder': 'Введите имя пользователя'
-        })
-    )
-    email = forms.EmailField(
-        widget=forms.EmailInput(attrs={
-            'class': 'form-control',
-            'placeholder': 'Введите email'
-        })
-    )
-    first_name = forms.CharField(
-        max_length=150,
-        label='Имя',
-        required=False,
-        widget=forms.TextInput(attrs={
-            'class': 'form-control',
-            'placeholder': 'Введите ваше имя'
-        })
-    )
-    last_name = forms.CharField(
-        max_length=150,
-        label='Фамилия',
-        required=False,
-        widget=forms.TextInput(attrs={
-            'class': 'form-control',
-            'placeholder': 'Введите вашу фамилию'
-        })
-    )
-
-    class Meta:
-        model = User
-        fields = ['username', 'email', 'first_name', 'last_name']

@@ -2,6 +2,7 @@ from django.db import models
 from django.contrib.auth import get_user_model
 from django.utils import timezone
 from django.urls import reverse
+from django.db.models import Count
 
 from core.models import PublishedModel, CreatedModel
 from .constants import STR_LENGHT, FILDS_MAX_LENGHT
@@ -20,6 +21,11 @@ class PostQuerySet(models.Manager):
             pub_date__lte=timezone.now(),
             category__is_published=True
         )
+
+    def get_comments_count(self):
+        return self.annotate(
+            comment_count=Count('comments')
+        ).values('comment_count')
 
 
 class Location(PublishedModel, CreatedModel):
@@ -89,7 +95,7 @@ class Post(PublishedModel, CreatedModel):
     class Meta:
         verbose_name = 'публикация'
         verbose_name_plural = 'Публикации'
-        ordering = ('-pub_date',)
+        ordering = ('-pub_date', 'created_at')
 
     def __str__(self):
         return self.title[:STR_LENGHT]
@@ -97,19 +103,21 @@ class Post(PublishedModel, CreatedModel):
     def get_absolute_url(self):
         return reverse('blog:post_detail', kwargs={'pk': self.pk})
 
-    def get_comment_count(self):
-        return self.comment.count()
 
-
-class Comment(models.Model):
+class Comment(CreatedModel):
     text = models.TextField('Текст комментария')
     post = models.ForeignKey(
         Post,
         on_delete=models.CASCADE,
-        related_name='comment',
+        related_name='comments'
     )
-    created_at = models.DateTimeField(auto_now_add=True)
     author = models.ForeignKey(User, on_delete=models.CASCADE)
 
     class Meta:
+        verbose_name = 'Комментарий'
+        verbose_name_plural = 'Комментарии'
         ordering = ('-created_at',)
+        default_related_name = 'comments'
+
+    def __str__(self):
+        return self.text[:STR_LENGHT]
