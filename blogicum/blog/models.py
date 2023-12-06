@@ -95,7 +95,7 @@ class Post(PublishedModel, CreatedModel):
     class Meta:
         verbose_name = 'публикация'
         verbose_name_plural = 'Публикации'
-        ordering = ('-pub_date', 'created_at')
+        ordering = ('-pub_date',)
 
     def __str__(self):
         return self.title[:STR_LENGHT]
@@ -116,7 +116,7 @@ class Comment(CreatedModel):
     class Meta:
         verbose_name = 'Комментарий'
         verbose_name_plural = 'Комментарии'
-        ordering = ('-created_at',)
+        ordering = ('created_at',)
         default_related_name = 'comments'
 
     def __str__(self):

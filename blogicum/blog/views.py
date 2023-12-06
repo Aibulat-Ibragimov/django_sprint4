@@ -64,16 +64,24 @@ class ProfileView(ListView):
     template_name = 'blog/profile.html'
     paginate_by = NUMBER_OF_POSTS
 
+    def get_object(self, queryset=None):
+        return self.request.user
+
     def get_queryset(self):
         username = self.kwargs['username']
         profile = get_object_or_404(User, username=username)
-        posts = Post.objects.filter_posts().filter(author=profile)
         if self.request.user != profile:
-            posts = posts.filter(
-                is_published=True, pub_date__lte=timezone.now()
+            posts = Post.objects.filter(
+                author=profile,
+                is_published=True,
+                pub_date__lte=timezone.now()
             )
-        posts = posts.annotate(comment_count=Count('comments'))
-        return posts
+            posts = posts.annotate(comment_count=Count('comments'))
+            return posts
+        else:
+            posts = Post.objects.filter(author=profile)
+            posts = posts.annotate(comment_count=Count('comments'))
+            return posts
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -132,10 +140,10 @@ class CategoryPostsView(ListView):
 class PostCreateView(LoginRequiredMixin, CreateView):
     model = Post
     template_name = 'blog/create.html'
-    fields = [
+    fields = (
         'title', 'text', 'pub_date', 'image',
         'location', 'category', 'is_published',
-    ]
+    )
 
     def get_success_url(self):
         return reverse_lazy(
@@ -150,10 +158,10 @@ class PostCreateView(LoginRequiredMixin, CreateView):
 class PostUpdateView(PostMixin, UpdateView):
     model = Post
     template_name = 'blog/create.html'
-    fields = [
+    fields = (
         'title', 'text', 'pub_date', 'image',
         'location', 'category', 'is_published',
-    ]
+    )
 
     def get_object(self, queryset=None):
         return get_object_or_404(Post, pk=self.kwargs.get('post_id'))
