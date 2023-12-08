@@ -13,10 +13,7 @@ class PostForm(forms.ModelForm):
 
     class Meta:
         model = Post
-        fields = (
-            'title', 'text', 'pub_date', 'image',
-            'location', 'category', 'is_published',
-        )
+        exclude = ('author',)
         widgets = {
             'text': forms.Textarea({'cols': '22', 'rows': '5'}),
             'pub_date': forms.DateTimeInput(
