@@ -69,7 +69,9 @@ class CategoryPostsView(ListView):
 
     def get_category(self, quryset=None):
         return get_object_or_404(
-            Category, slug=self.kwargs['category_slug']
+            Category,
+            slug=self.kwargs['category_slug'],
+            is_published=True
         )
 
     def get_queryset(self):
@@ -144,16 +146,12 @@ class PostDetailView(PostMixin, DetailView):
         context['comment_count'] = comment_count
         return context
 
-    def post(self, request, *args, **kwargs):
-        form = CommentForm(request.POST)
-        if form.is_valid():
-            comment = form.save(commit=False)
-            comment.author = request.user
-            comment.post = self.object
-            comment.save()
-            return redirect('blog:post_detail', post_id=self.object.pk)
-        else:
-            return self.render_to_response(self.get_context_data(form=form))
+    def form_valid(self, form):
+        comment = form.save(commit=False)
+        comment.author = self.request.user
+        comment.post = self.object
+        comment.save()
+        return redirect('blog:post_detail', post_id=self.object.pk)
 
 
 class AddCommentView(CommentMixin, View):
