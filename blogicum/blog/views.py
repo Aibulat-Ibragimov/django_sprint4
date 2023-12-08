@@ -3,6 +3,7 @@ from django.views.generic import ListView, CreateView, UpdateView, DeleteView
 from django.views.generic import View, DetailView
 from django.urls import reverse_lazy
 from django.contrib.auth.mixins import LoginRequiredMixin
+from django.utils import timezone
 
 from .models import Post, Category, User, Comment
 from .forms import CommentForm
@@ -133,7 +134,11 @@ class PostDetailView(PostMixin, DetailView):
     context_object_name = 'post'
 
     def get_queryset(self):
-        return Post.objects.filter_posts()
+        return Post.objects.filter(
+            is_published=True,
+            pub_date__lte=timezone.now(),
+            category__is_published=True
+        )
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
