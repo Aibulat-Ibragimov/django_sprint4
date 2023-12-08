@@ -75,7 +75,7 @@ class CategoryPostsView(ListView):
 
     def get_queryset(self):
         category = self.get_category()
-        posts = Post.objects.filter(category=category)
+        posts = Post.objects.filter_posts().filter(category=category)
         for post in posts:
             post.comment_count = post.comments.count()
         return posts
