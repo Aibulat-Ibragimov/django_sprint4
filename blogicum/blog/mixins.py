@@ -1,7 +1,7 @@
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.http import HttpResponseRedirect
 from django.urls import reverse_lazy
-from django.shortcuts import get_object_or_404
+from django.shortcuts import get_object_or_404, redirect
 
 from .models import Post, Comment
 from .forms import PostForm
@@ -44,7 +44,7 @@ class CommentMixin(LoginRequiredMixin):
         return reverse_lazy(
             'blog:post_detail', kwargs={'post_id': self.kwargs['post_id']}
         )
-    
+
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context['comment'] = self.get_object()

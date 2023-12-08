@@ -1,14 +1,12 @@
-from django.shortcuts import get_object_or_404, render, redirect
+from django.shortcuts import get_object_or_404, redirect
 from django.views.generic import ListView, CreateView, UpdateView, DeleteView
 from django.views.generic import View, DetailView
 from django.urls import reverse_lazy
-from django.http import HttpResponseRedirect, Http404
-from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
-from django.db.models import Count
+from django.contrib.auth.mixins import LoginRequiredMixin
 from django.utils import timezone
 
 from .models import Post, Category, User, Comment
-from .forms import CommentForm, PostForm
+from .forms import CommentForm
 from .constants import NUMBER_OF_POSTS
 from .mixins import AuthorMixin, PostMixin, CommentMixin
 
@@ -77,7 +75,7 @@ class CategoryPostsView(ListView):
 
     def get_queryset(self):
         category = self.get_category()
-        posts = Post.objects.filter(category=category)  
+        posts = Post.objects.filter(category=category)
         for post in posts:
             post.comment_count = post.comments.count()
         return posts
