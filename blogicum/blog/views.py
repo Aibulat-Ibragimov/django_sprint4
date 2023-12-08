@@ -3,6 +3,8 @@ from django.views.generic import ListView, CreateView, UpdateView, DeleteView
 from django.views.generic import View, DetailView
 from django.urls import reverse_lazy
 from django.contrib.auth.mixins import LoginRequiredMixin
+from django.utils import timezone
+from django.http import Http404
 
 from .models import Post, Category, User, Comment
 from .forms import CommentForm
@@ -127,31 +129,45 @@ class PostDeleteView(PostMixin, AuthorMixin, DeleteView):
     pass
 
 
-class PostDetailView(PostMixin, DetailView):
+class PostDetailView(PostMixin, CommentMixin, DetailView):
     model = Post
     pk_url_kwarg = 'post_id'
     context_object_name = 'post'
-
-    def get_queryset(self):
-        return Post.objects.filter_posts()
+    template_name = 'blog/post_detail.html'
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        post = self.get_queryset().get(pk=self.kwargs['post_id'])
-        comments = Comment.objects.filter(post=post).order_by('created_at')
-        form = CommentForm()
-        comment_count = post.comments.count()
-        context['comments'] = comments
-        context['form'] = form
-        context['comment_count'] = comment_count
+        post = self.get_object()
+        if (
+            post.is_published and post.category.is_published
+            and post.pub_date <= timezone.now()
+            or (
+                self.request.user.is_authenticated
+                and self.request.user == post.author
+            )
+        ):
+            comments = Comment.objects.filter(post=post).order_by('created_at')
+            comment_count = post.comments.count()
+            context.update({
+                'post': post,
+                'comments': comments,
+                'comment_count': comment_count,
+                'form': CommentForm()
+            })
+        else:
+            raise Http404
         return context
 
-    def form_valid(self, form):
-        comment = form.save(commit=False)
-        comment.author = self.request.user
-        comment.post = self.get_queryset().get(pk=self.kwargs['post_id'])
-        comment.save()
-        return redirect('blog:post_detail', post_id=self.object.pk)
+    def post(self, request, *args, **kwargs):
+        form = CommentForm(request.POST)
+        if form.is_valid():
+            comment = form.save(commit=False)
+            comment.author = request.user
+            comment.post = self.get_object()
+            comment.save()
+            return redirect('blog:post_detail', post_id=self.kwargs['post_id'])
+        else:
+            return self.get(request, *args, **kwargs)
 
 
 class AddCommentView(CommentMixin, View):
