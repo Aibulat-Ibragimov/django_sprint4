@@ -132,19 +132,14 @@ class PostDetailView(PostMixin, DetailView):
     context_object_name = 'post'
 
     def get_queryset(self):
-        queryset = super().get_queryset()
-        return queryset.filter(
-            is_published=True,
-            category__is_published=True,
-            pub_date__lte=timezone.now()
-        )
+        return Post.objects.filter_posts()
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         post = self.object
         comments = Comment.objects.filter(post=post).order_by('created_at')
         form = CommentForm()
-        comment_count = Comment.objects.count()
+        comment_count = post.comments.count()
         context['comments'] = comments
         context['form'] = form
         context['comment_count'] = comment_count
