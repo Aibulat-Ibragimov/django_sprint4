@@ -132,12 +132,12 @@ class PostDetailView(PostMixin, DetailView):
     pk_url_kwarg = 'post_id'
     context_object_name = 'post'
 
-    def get_post(self):
+    def get_queryset(self):
         return Post.objects.filter_posts()
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        post = self.get_post()
+        post = self.get_queryset().get(pk=self.kwargs['post_id'])
         comments = Comment.objects.filter(post=post).order_by('created_at')
         form = CommentForm()
         comment_count = post.comments.count()
@@ -149,7 +149,7 @@ class PostDetailView(PostMixin, DetailView):
     def form_valid(self, form):
         comment = form.save(commit=False)
         comment.author = self.request.user
-        comment.post = self.object
+        comment.post = self.get_queryset().get(pk=self.kwargs['post_id'])
         comment.save()
         return redirect('blog:post_detail', post_id=self.object.pk)
 
