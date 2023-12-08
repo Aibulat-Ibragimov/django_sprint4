@@ -129,15 +129,18 @@ class PostDeleteView(PostMixin, AuthorMixin, DeleteView):
     pass
 
 
-class PostDetailView(PostMixin, CommentMixin, DetailView):
+class PostDetailView(DetailView):
     model = Post
     pk_url_kwarg = 'post_id'
     context_object_name = 'post'
-    template_name = 'blog/post_detail.html'
 
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
+    def get_queryset(self):
         post = self.get_object()
+        comments = Comment.objects.filter(post=post).order_by('created_at')
+        return comments
+
+    def get_object(self, queryset=None):
+        post = get_object_or_404(Post, pk=self.kwargs.get('post_id'))
         if (
             post.is_published and post.category.is_published
             and post.pub_date <= timezone.now()
@@ -146,16 +149,20 @@ class PostDetailView(PostMixin, CommentMixin, DetailView):
                 and self.request.user == post.author
             )
         ):
-            comments = Comment.objects.filter(post=post).order_by('created_at')
-            comment_count = post.comments.count()
-            context.update({
-                'post': post,
-                'comments': comments,
-                'comment_count': comment_count,
-                'form': CommentForm()
-            })
+            return post
         else:
             raise Http404
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        post = self.get_object()
+        form = CommentForm()
+        comments = self.get_queryset()
+        comment_count = comments.count()
+        context['post'] = post
+        context['form'] = form
+        context['comments'] = comments
+        context['comment_count'] = comment_count
         return context
 
     def post(self, request, *args, **kwargs):
@@ -167,7 +174,7 @@ class PostDetailView(PostMixin, CommentMixin, DetailView):
             comment.save()
             return redirect('blog:post_detail', post_id=self.kwargs['post_id'])
         else:
-            return self.get(request, *args, **kwargs)
+            return self.render_to_response(self.get_context_data(form=form))
 
 
 class AddCommentView(CommentMixin, View):
