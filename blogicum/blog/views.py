@@ -3,7 +3,6 @@ from django.views.generic import ListView, CreateView, UpdateView, DeleteView
 from django.views.generic import View, DetailView
 from django.urls import reverse_lazy
 from django.contrib.auth.mixins import LoginRequiredMixin
-from django.utils import timezone
 
 from .models import Post, Category, User, Comment
 from .forms import CommentForm
