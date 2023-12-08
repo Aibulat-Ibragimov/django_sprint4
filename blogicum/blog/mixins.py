@@ -59,6 +59,10 @@ class CommentMixin(LoginRequiredMixin):
 
     def form_valid(self, form):
         comment = self.get_object()
-        if self.request.user != comment.author:
+        if (
+            self.request.user == comment.author
+            or self.request.user.is_superuser
+        ):
+            return super().form_valid(form)
+        else:
             return redirect('blog:post_detail', post_id=comment.post.id)
-        return super().form_valid(form)
