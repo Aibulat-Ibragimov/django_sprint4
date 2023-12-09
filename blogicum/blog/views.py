@@ -201,4 +201,5 @@ class DeleteCommentView(CommentMixin, DeleteView):
     model = Comment
     template_name = 'blog/comment.html'
     context_object_name = 'comment'
+
     pass

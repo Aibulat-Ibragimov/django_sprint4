@@ -51,18 +51,23 @@ class CommentMixin(LoginRequiredMixin):
         return context
 
     def get_object(self, queryset=None):
-        return get_object_or_404(
+        comment = get_object_or_404(
             Comment,
             pk=self.kwargs.get('comment_id'),
             post=self.kwargs.get('post_id')
         )
+        if (
+            comment.author == self.request.user
+            or self.request.user.is_superuser
+        ):
+            return comment
 
     def form_valid(self, form):
         comment = self.get_object()
-        if (
-            not self.request.user.is_authenticated
-            or self.request.user != comment.author
-            and not self.request.user.is_superuser
+        if not (
+            self.request.user.is_authenticated
+            and self.request.user == comment.author
+            or self.request.user.is_superuser
         ):
             return redirect('blog:post_detail', post_id=comment.post.id)
         else:
