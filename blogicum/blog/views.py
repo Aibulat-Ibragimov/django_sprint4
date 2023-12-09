@@ -204,7 +204,10 @@ class DeleteCommentView(CommentMixin, DeleteView):
 
     def delete(self, request, *args, **kwargs):
         comment = self.get_object()
-        if self.request.user == comment.author or self.request.user.is_superuser:
+        if (
+            self.request.user == comment.author
+            or self.request.user.is_superuser
+        ):
             return super().delete(request, *args, **kwargs)
         else:
             return redirect('blog:post_detail', post_id=comment.post.id)
