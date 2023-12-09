@@ -61,8 +61,8 @@ class CommentMixin(LoginRequiredMixin):
         comment = self.get_object()
         if (
             self.request.user.is_authenticated
-            and self.request.user == comment.author
-            or self.request.user.is_superuser
+            and (self.request.user == comment.author
+                 or self.request.user.is_superuser)
         ):
             return super().form_valid(form)
         else:
