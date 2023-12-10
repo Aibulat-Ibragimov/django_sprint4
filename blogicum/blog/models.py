@@ -16,6 +16,8 @@ class PostQuerySet(models.Manager):
             'location',
             'author',
             'category'
+        ).annotate(
+            comment_count=Count('comments')
         ).filter(
             is_published=True,
             pub_date__lte=timezone.now(),
@@ -25,7 +27,7 @@ class PostQuerySet(models.Manager):
     def get_comments_count(self):
         return self.annotate(
             comment_count=Count('comments')
-        ).order_by('created_at')
+        ).order_by('-pub_date')
 
 
 class Location(PublishedModel, CreatedModel):
@@ -109,7 +111,6 @@ class Comment(CreatedModel):
     post = models.ForeignKey(
         Post,
         on_delete=models.CASCADE,
-        related_name='comments',
         verbose_name='Публикация'
     )
     author = models.ForeignKey(

@@ -1,9 +1,9 @@
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.http import HttpResponseRedirect
 from django.urls import reverse_lazy
-from django.shortcuts import get_object_or_404, redirect
+from django.shortcuts import get_object_or_404
 
-from .models import Post, Comment
+from .models import Post
 from .forms import PostForm
 
 
@@ -27,16 +27,11 @@ class PostMixin(LoginRequiredMixin, AuthorMixin):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        post = context['post']
-        context['form'] = PostForm(instance=post)
+        context['form'] = PostForm(instance=self.object)
         return context
 
     def get_object(self, queryset=None):
         return get_object_or_404(Post, pk=self.kwargs.get('post_id'))
-
-    def form_valid(self, form):
-        form.instance.author = self.request.user
-        return super().form_valid(form)
 
 
 class CommentMixin(LoginRequiredMixin):
@@ -44,21 +39,3 @@ class CommentMixin(LoginRequiredMixin):
         return reverse_lazy(
             'blog:post_detail', kwargs={'post_id': self.kwargs['post_id']}
         )
-
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        context['comment'] = self.get_object()
-        return context
-
-    def get_object(self, queryset=None):
-        return get_object_or_404(
-            Comment,
-            pk=self.kwargs.get('comment_id'),
-            post=self.kwargs.get('post_id')
-        )
-
-    def form_valid(self, form):
-        comment = self.get_object()
-        if self.request.user != comment.author:
-            return redirect('blog:post_detail', post_id=comment.post.id)
-        return super().form_valid(form)
