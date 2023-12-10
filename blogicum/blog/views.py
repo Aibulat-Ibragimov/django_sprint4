@@ -96,7 +96,7 @@ class PostCreateView(LoginRequiredMixin, CreateView):
         return super().form_valid(form)
 
 
-class PostUpdateView(UpdateView):
+class PostUpdateView(AuthorMixin, UpdateView):
     model = Post
     template_name = 'blog/create.html'
     fields = (
