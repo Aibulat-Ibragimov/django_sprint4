@@ -14,7 +14,7 @@ def page_not_found_404(request, exception):
     return render(request, 'pages/404.html', status=404)
 
 
-def csrf_403(request, exception):
+def csrf_403(request, *args, **kwargs):
     return render(request, 'pages/403csrf.html', status=403)
 
 
