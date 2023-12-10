@@ -96,7 +96,10 @@ class PostCreateView(LoginRequiredMixin, CreateView):
         return super().form_valid(form)
 
 
-class PostUpdateView(AuthorMixin, UpdateView):
+# Я оставил PostMixin, так как я не нашел решения:
+# проверки что пользователь, это автор поста;
+# редиректа на сам пост, если неавторизованный пользователь
+class PostUpdateView(PostMixin, UpdateView):
     model = Post
     template_name = 'blog/create.html'
     fields = (
