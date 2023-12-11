@@ -10,24 +10,33 @@ from .constants import STR_LENGHT, FILDS_MAX_LENGHT
 User = get_user_model()
 
 
-class PostQuerySet(models.Manager):
+class PostQuerySet(models.QuerySet):
     def filter_posts(self):
-        return self.select_related(
-            'location',
-            'author',
-            'category'
-        ).annotate(
-            comment_count=Count('comments')
-        ).filter(
+        return self.filter(
             is_published=True,
             pub_date__lte=timezone.now(),
             category__is_published=True
         ).order_by('-pub_date')
 
     def get_comments_count(self):
-        return self.annotate(
+        return self.select_related(
+            'location',
+            'author',
+            'category'
+        ).annotate(
             comment_count=Count('comments')
         ).order_by('-pub_date')
+
+
+class PostManager(models.Manager):
+    def get_queryset(self):
+        return PostQuerySet(self.model, using=self._db)
+
+    def filter_posts(self):
+        return self.get_queryset().filter_posts()
+
+    def get_comments_count(self):
+        return self.get_queryset().get_comments_count()
 
 
 class Location(PublishedModel, CreatedModel):
@@ -92,7 +101,7 @@ class Post(PublishedModel, CreatedModel):
         related_name='posts'
     )
     image = models.ImageField('Фото', upload_to='birthdays_images', blank=True)
-    objects = PostQuerySet()
+    objects = PostManager()
 
     class Meta:
         verbose_name = 'публикация'
